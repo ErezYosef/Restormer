@@ -96,7 +96,9 @@ def main():
 
     )
     train_loop.log_step()
-    train_loop.validation_sample(only_first_batch=False, save_all=args.save_all_samples, update_logger_for_sample=True)
+    for i in range(20):
+        train_loop.validation_sample(only_first_batch=False, save_all=args.save_all_samples,
+                                     update_logger_for_sample=False, log_images_wandb=False, post_tag_folder=f'{i}')
     logger.dumpkvs()
 
 

@@ -68,7 +68,7 @@ class TrainLoop_wrap(TrainLoop):
         return super().forward_backward(batch, cond, use_device=None) # torch.device('cpu')
 
     def validation_sample(self, data_to_sample=None, num_samples=8, only_first_batch=True, call_id=0, save_all=False,
-                          update_logger_for_sample=False):
+                          update_logger_for_sample=False, log_images_wandb=True, post_tag_folder=''):
         self.model.eval()
         if data_to_sample is None:
             data_to_sample = self.val_dataset
@@ -125,23 +125,24 @@ class TrainLoop_wrap(TrainLoop):
             assert isinstance(x_T_end, dict), 'x_T_end (returned from p_sample_loop) should be a dict!'
 
             #if batch_counter == 0:
-            if self.step == 0:  # was "==0" but changed to support resume train from 999999
-                logger.get_logger().logimage(f'img{call_id}_input0', gt_imgs.to('cpu'))
-            for k,v in x_T_end.items():
-                logger.get_logger().logimage(f"img{call_id}_{k}", v)
-            #print(f'logging to img{call_id}_xT at {self.step}, total {len(x_T_end)}')
-            logger.get_logger().logimage(f'img{call_id}_samples0', sample_cp)
-            if update_logger_for_sample:  # in code: image_sample.py
-                logger.dumpkvs()  # dump the results
-                self.step += 1  # update next step
-                self.log_step()  # log the step for next loop if available
+            if log_images_wandb:
+                if self.step == 0:  # was "==0" but changed to support resume train from 999999
+                    logger.get_logger().logimage(f'img{call_id}_input0', gt_imgs.to('cpu'))
+                for k,v in x_T_end.items():
+                    logger.get_logger().logimage(f"img{call_id}_{k}", v)
+                #print(f'logging to img{call_id}_xT at {self.step}, total {len(x_T_end)}')
+                logger.get_logger().logimage(f'img{call_id}_samples0', sample_cp)
+                if update_logger_for_sample:  # in code: image_sample.py
+                    logger.dumpkvs()  # dump the results
+                    self.step += 1  # update next step
+                    self.log_step()  # log the step for next loop if available
 
 
 
             if save_all:
-                dir_to_save = os.path.join(logger.get_dir(), 'save')
-                dir_to_init = os.path.join(logger.get_dir(), 'save')
-                dir_to_gt = os.path.join(logger.get_dir(), 'save')
+                dir_to_save = os.path.join(logger.get_dir(), 'save'+post_tag_folder)
+                dir_to_init = os.path.join(logger.get_dir(), 'save'+post_tag_folder)
+                dir_to_gt = os.path.join(logger.get_dir(), 'save'+post_tag_folder)
                 if not os.path.exists(dir_to_save):
                     os.mkdir(dir_to_save)
                 for i in range(sample_cp.shape[0]):
