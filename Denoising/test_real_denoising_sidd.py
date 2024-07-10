@@ -24,7 +24,7 @@ parser.add_argument('--input_dir', default='./Datasets/test/SIDD/', type=str, he
 parser.add_argument('--result_dir', default='./results/Real_Denoising/SIDD/', type=str, help='Directory for results')
 parser.add_argument('--weights', default='./pretrained_models/real_denoising.pth', type=str, help='Path to weights')
 parser.add_argument('--save_images', action='store_true', help='Save denoised images in result directory')
-
+# CUDA_VISIBLE_DEVICES=2 python test_real_denoising_sidd.py --save_images --input_dir /data1/erez/datasets/sidd/srgb_test/
 args = parser.parse_args()
 
 ####### Load yaml #######

@@ -1,0 +1,20 @@
+# Paths To data files
+
+# Place 7 first chars of run_system = os.uname()[1]
+#   keys according to config.yaml file args.
+#   in paths, <> will be replaced with these paths
+
+
+runway.: # runway.tau.ac.il
+  main_path: /data1
+  resume_checkpoint: /data1
+  #main_data_path: /data2/erez/datasets/coco_captions/raw_imgs/NU? # NU: disk bottleneck use crops
+  main_data_path_train: /data2
+  main_data_path_val: /data2
+
+erezjob: # erezjob3-0-1
+  main_path: /storage
+  resume_checkpoint: /storage
+  #main_data_path: /data2/erez/datasets/coco_captions/raw_imgs/NU? # NU: disk bottleneck use crops
+  main_data_path_train: /storage
+  main_data_path_val: /storage

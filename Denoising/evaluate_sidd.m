@@ -1,6 +1,6 @@
 close all;clear all;
 
-denoised = load('./results/Real_Denoising/SIDD/mat/Idenoised.mat');
+denoised = load('./results/Idenoised.mat');
 gt = load('./Datasets/test/SIDD/ValidationGtBlocksSrgb.mat');
 
 denoised = denoised.Idenoised;

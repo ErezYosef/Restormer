@@ -1,0 +1,89 @@
+# Train run will save at: main_path/%y%m%d_%H%M%S_%description"
+paths_yamlfile: diffusion/coco_configs/data_paths.yaml # use <> to set up paths according to the server
+main_path: <>/erez/Documents/sidd/diffusion_coco
+# load: '' # use -f argument
+# sub_dir_tstsave: 0_tests # NU
+#load_file: ema_0.9999_010000.pt # or use --lf ; file name to load from folder given by (-f/ argument
+#load_file: model010000.pt # or use --lf ; file name to load from folder given by (-f/ argument
+# resume_checkpoint: /data1/erez/Documents/sidd/diffusion_coco/230515_1218_cond_w_imgs_clip/model360000.pt
+resume_checkpoint: <>/erez/Documents/sidd/diffusion_coco_storage/230720_1843_cont_300Kcond/model999999.pt
+#resume_ema_opt: False
+format_strs: log,csv,wandb
+wandb_project: diffusion_coco
+job_type: condition_train
+wandb_tags: ['condition_train', 's7']
+
+
+#MODEL_FLAGS
+image_size: 128
+input_channels: 8 # 3 for diffusion + 3 / 4 for concat rgb/raw image
+out_channels: 4
+num_channels: 128 # 128
+num_res_blocks: 3
+# learn_sigma: False # True
+model_var_type_name: fixed_large  # learned_sigma / fixed_small / fixed_large (default)
+model_mean_type_name: xstart # xprev / epsilon / xstart
+class_cond: False # True for clip embd adaGN
+loss_type_name: l1 # todo think
+attention_resolutions: ''# '8,16' # 16,problem # D:16,8, REC: 32,16,8 # Resolutions of the image (4lvl unet: 128>64>32>16>8)
+num_heads: 1 # D:4
+xf_width: 768 # 512 # size of clip embedding
+# dropout 0.1 ?? #D:0.0
+
+# num_head_channels 64 ?
+# resblock_updown True ? #D:False
+use_fp16: False # mandatory for LORA train (bugs) # D:False
+
+#DIFFUSION_FLAGS
+diffusion_type: dvir_unet # dvir_restormer_trained_freeze # dvir_unet , noise_diffusion, dvir_* # todo fix
+model_type: concat_condition_nulllabel
+diffusion_steps: 1000
+noise_schedule: cosine #linear
+ema_rate: 0.9999,0.9997, 0.9992 # todo think check
+#Reweighted VLB?
+
+#TRAIN_FLAGS
+lr: 0.0001
+batch_size: 8 # todo fix 6
+batches_accumulate_grads: 2
+save_interval: 1000 # todo fix # save every 5 times by step number. otherwise save as 'latest' and override.
+log_interval: 500
+num_workers: 8
+train_noise_percent: 0 #3.13 # todo
+test_noise_percent: 0 #3.13 #
+islora: True
+lora_checkpoint: null # /data1/erez/Documents/sidd/diffusion_coco/230730_0025_lora_cont_cond_1M/model1000000.pt
+# DATASET:
+dataset_type: s7
+trim_len: 0
+clip_dataset: True # for contidition on clip data
+train_unlabeld: 0 # train the diffusion without clip data
+
+
+# paths:
+#<> main_data_path: /data2/erez/datasets/coco_captions/raw_imgs/NU? # NU: disk bottleneck use crops
+main_data_path_train: <>/erez/datasets/denoising/s7_isp_b/
+main_data_path_val: <>/erez/datasets/denoising/s7_isp_b/
+# val_percent: 0.1
+
+
+# CUDA_VISIBLE_DEVICES=2 python diffusion/image_train.py --config_file diffusion/configs/condition_train_config.yaml -d flatnetcondition_train
+# CUDA_VISIBLE_DEVICES=0 python diffusion/image_train.py --config_file diffusion/coco_configs/condition_train_config.yaml -d condition_train
+#  CUDA_VISIBLE_DEVICES=1 python diffusion/image_train.py --config_file diffusion/coco_configs/condition_train_config.yaml -d firsttes
+
+
+
+# PREVIOUS OLDER CODES:
+# DATA
+#<> data_dir: /data2/erez/datasets/faces/raw_data/thumbnails128x128/
+# clip_file_path: /data2/erez/datasets/faces/raw_data/thumbnails128x128_ViT-B32_dict.pt
+
+#<> data_dir_test: /data2/erez/datasets/faces/raw_data/celeba_hq_256/
+# clip_file_path_test: /data2/erez/datasets/faces/raw_data/clip_embd_celeba_hq_256_ViT-B32_dict.pt
+# num_workers: 4
+
+# DIFFUSION_TRAINING_TEST CUDA_VISIBLE_DEVICES=2 python scripts/image_train.py -d description
+# CUDA_VISIBLE_DEVICES=2 python scripts/super_res_train.py -d description
+
+# CUDA_VISIBLE_DEVICES=0 python scripts/image_train.py --config_file configs/cold_train_config.yaml -d cold_sample
+
