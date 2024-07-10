@@ -183,8 +183,8 @@ class Dataset_s21(data.Dataset):
         return img_index, embd_index
 
     def _load_embd(self, img_index, embd_index):
-        img_clip_embd = self.clip_cache.get(img_index, None)  # todo change 80-img_index
-        print("mixing caps")
+        img_clip_embd = self.clip_cache.get(img_index, None)  # todo use 80-img_index for mixing caps and print:
+        #print("mixing caps")
         if img_clip_embd is None:
             return None
         return img_clip_embd[embd_index]
