@@ -607,14 +607,16 @@ def metrics_orig_env_and_raw_psnr():
             img_path = os.path.join(folder, im_name.format(i))
             image = torch.load(img_path)
             # image = totensor(image).unsqueeze(0).to(device)
+            image = (image+1) / 2
+            gt_image = (gt_image+1) / 2
             loss = metric_func(image, gt_image)
             # print(loss.shape)
             loss = loss.mean()
             res_dict[im_name.format(i)] = loss.item()  # numpy()
             res_dict[im_name.format(999)] = res_dict.get(im_name.format(999), 0) + loss.item()
             #rgb = process(gt_image)
-            save_img(tensor2img(gt_image, min_max=(0, 1)), gt_image_p.replace('.pt', '.png'))
-            save_img(tensor2img(image, min_max=(0, 1)), img_path.replace('.pt', '.png'))
+            #save_img(tensor2img(gt_image, min_max=(0, 1)), gt_image_p.replace('.pt', '.png'))
+            #save_img(tensor2img(image, min_max=(0, 1)), img_path.replace('.pt', '.png'))
 
         res_dict[im_name.format(999)] /= num_samples
         print(im_name, res_dict[im_name.format(999)], type(res_dict[im_name.format(999)]))
@@ -629,7 +631,7 @@ def metrics_orig_env_and_raw_psnr():
 
     test_fname = '230813_1200_concat_n03_1.2m'
 
-    mode = 'cond_s21all_mix'
+    mode = 'cond_s21all_x20'
     if mode == 'cond':
         process_folders = ['230813_1135_cond_n02_1.2m', '230813_1142_cond_n03_1.2m', '230813_1308_lora_cond_s21_13m', '230813_1225_basecond_s21']
     elif mode == 'cond_30':
@@ -648,6 +650,8 @@ def metrics_orig_env_and_raw_psnr():
         process_folders = ['231009_1510_lora_cond_s21all_13m']
     elif mode == 'cond_s21all_mix':
         process_folders = ['240418_1409_loracond_s21all13m_mixcap80']
+    elif mode == 'cond_s21all_x20':
+        process_folders = ['240710_1513_x20_loracond_s21all']
     else:
         process_folders = ['']
 
@@ -657,9 +661,9 @@ def metrics_orig_env_and_raw_psnr():
     for test_fname in process_folders:
         # cat: 230803_1923_basecat_Nlvl_L14n/ # cond: 230803_1653_basecond_Nlvl_L14norm
         if 'cond' in mode:
-            folder = f'/data1/erez/Documents/sidd/diffusion_coco_storage/230803_1653_basecond_Nlvl_L14norm/{test_fname}/save_all/'
+            folder = f'/data1/erez/Documents/sidd/diffusion_coco_storage/230803_1653_basecond_Nlvl_L14norm/{test_fname}/save_all4/'
         if 'cat' in mode:
-            folder = f'/data1/erez/Documents/sidd/diffusion_coco_storage/230803_1923_basecat_Nlvl_L14n/{test_fname}/save_all/'
+            folder = f'/data1/erez/Documents/sidd/diffusion_coco_storage/230803_1923_basecat_Nlvl_L14n/{test_fname}/save_all2/'
         if 'n2v_01' in mode:
             folder = '/home/erez/PycharmProjects/raw_dn_related/n2v/models/n2v_coco_2210/save01b/'
             folder = '/home/erez/PycharmProjects/raw_dn_related/n2v/models/n2v_coco/save01/'
@@ -695,8 +699,8 @@ def metrics_orig_env_and_raw_psnr():
         metric_dict = get_raw_metric_dict(folder, metric_func=mseloss)
         total_dict.update({f'mse_RAW_{k}': v for k, v in metric_dict.items()})
 
-        if 'mse_RAW_sample999.png' in total_dict:
-            total_dict['psnr_RAW'] = -10 * torch.log10(torch.tensor(total_dict['mse_RAW_sample999.png'])).item()
+        if 'mse_RAW_sample999.pt' in total_dict:
+            total_dict['psnr_RAW'] = -10 * torch.log10(torch.tensor(total_dict['mse_RAW_sample999.pt'])).item()
             print('psnr_RAW', total_dict['psnr_RAW'])
 
 
@@ -709,26 +713,37 @@ def collecting_more_sampling():
     print(os.listdir(path))
     total_dict = {}
     total_count = {}
-    out_folder = os.path.join(path, 'save_all')
-    os.mkdir(out_folder)
+
+    from guided_diffusion.saving_imgs_utils import save_img, tensor2img
+
+    out_folder = os.path.join(path, 'save_all4')
+    if not os.path.exists(out_folder):
+        os.mkdir(out_folder)
 
     for i in range(20):
         save_folder = os.path.join(path, f'save{i}')
-        files = glob.glob(f'{save_folder}/sample*')
+        files = glob.glob(f'{save_folder}/sample*[0-9].pt')
+        files = glob.glob(f'{save_folder}/*.pt')
         files.sort()
+        #print(files)
         for file in files:
-            path, imname = os.path.split(file)
+            allpath, imname = os.path.split(file)
             image = torch.load(file, map_location='cpu')
             total_dict[imname] = total_dict.get(imname, torch.zeros_like(image)) + image
             total_count[imname] = total_count.get(imname, 0) + 1
+            #print(total_count[imname])
+        #print(total_count)
 
-        print('number of images', len(total_dict.keys()))
-        for imname, v in total_dict.items():
-            if total_count[imname] != 20:
-                print(f'num of image {imname} is {total_count[imname]}')
-            total_dict[imname] = v / total_count[imname]
-            out_file = os.path.join(out_folder, imname)
-            torch.save(total_dict[imname], out_file)
+    print('number of images', len(total_dict.keys()))
+    print(total_count)
+
+    for imname, v in total_dict.items():
+        if total_count[imname] != 20:
+            print(f'num of image {imname} is {total_count[imname]}')
+        total_dict[imname] = v / total_count[imname]
+        out_file = os.path.join(out_folder, imname)
+        torch.save(total_dict[imname], out_file)
+        save_img(tensor2img(total_dict[imname]), out_file.replace('.pt', '.png'))
 
 
 
@@ -752,4 +767,8 @@ if __name__ == '__main__':
     # clip_score_orig_env('n2v_01')
     # clip_score_orig_env('n2v_s21')
 
-    compute_raw_psnr()
+    # compute_raw_psnr()
+
+
+    #collecting_more_sampling()
+    metrics_orig_env_and_raw_psnr()

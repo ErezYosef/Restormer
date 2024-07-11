@@ -50,9 +50,9 @@ log_interval: 500
 num_workers: 8
 train_noise_percent: 0 #3.13 # todo
 test_noise_percent: 0 #3.13 #
-islora: False
+islora: True
 #lora_checkpoint: null # /data1/erez/Documents/sidd/diffusion_coco/230730_0025_lora_cont_cond_1M/model1000000.pt
-#lora_checkpoint: /data1/erez/Documents/sidd/diffusion_coco/230810_1313_lora_cat_s21/ema_0.9999_1300000.pt
+lora_checkpoint: /data1/erez/Documents/sidd/diffusion_coco/230810_1313_lora_cat_s21/ema_0.9999_1300000.pt
 # DATASET:
 #dataset_type: s7
 dataset_type: s21
