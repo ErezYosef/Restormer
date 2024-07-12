@@ -37,11 +37,11 @@ def calculate_psnr(img1,
     if type(img1) == torch.Tensor:
         if len(img1.shape) == 4:
             img1 = img1.squeeze(0)
-        img1 = img1.detach().cpu().numpy().transpose(1,2,0)
+        img1 = img1.detach().cpu().numpy()#.transpose(1,2,0)
     if type(img2) == torch.Tensor:
         if len(img2.shape) == 4:
             img2 = img2.squeeze(0)
-        img2 = img2.detach().cpu().numpy().transpose(1,2,0)
+        img2 = img2.detach().cpu().numpy()#.transpose(1,2,0)
         
     img1 = reorder_image(img1, input_order=input_order)
     img2 = reorder_image(img2, input_order=input_order)

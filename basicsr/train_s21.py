@@ -22,6 +22,9 @@ from basicsr.utils.options import dict2str, parse
 
 import numpy as np
 
+## # python basicsr/train_s21.py -opt Denoising/Options/RealDenoisingS21_Restormer.yml
+from guided_diffusion.process_raw2rgb_torch import process
+
 def parse_options(is_train=True):
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -135,7 +138,7 @@ def create_train_val_dataloader(opt, logger):
 
     return train_loader, train_sampler, val_loader, total_epochs, total_iters
 
-# python basicsr/train.py -opt Denoising/Options/RealDenoisingRaw_Restormer.yml
+# python basicsr/train_s21.py -opt Denoising/Options/RealDenoisingS21_Restormer.yml
 def main():
     # parse options, set distributed setting, set ramdom seed
     opt = parse_options(is_train=True)
@@ -264,6 +267,9 @@ def main():
 
             lq = train_data['lq']
             gt = train_data['gt']
+
+            gt = process(gt, min_max=(0, 1))
+            lq = process(lq, min_max=(0, 1))
             #print('>>', lq.shape, gt.shape)
 
 
@@ -280,12 +286,12 @@ def main():
                 lq = lq[:,:,x0:x1,y0:y1]
                 gt = gt[:,:,x0*scale:x1*scale,y0*scale:y1*scale]
             ###-------------------------------------------
-            train_loader.dataset.model_rgb2raw.to(model.device)
-
-            gt = train_loader.dataset.rgb2raw(gt.to(model.device))
-            lq = torch.zeros_like(gt)
-            for i in range(gt.shape[0]):
-                lq[i] = train_loader.dataset.add_noise(gt[i], *train_loader.dataset.random_noise_levels()) #, use_cuda=False)
+            # train_loader.dataset.model_rgb2raw.to(model.device)
+            #
+            # gt = train_loader.dataset.rgb2raw(gt.to(model.device))
+            # lq = torch.zeros_like(gt)
+            # for i in range(gt.shape[0]):
+            #     lq[i] = train_loader.dataset.add_noise(gt[i], *train_loader.dataset.random_noise_levels()) #, use_cuda=False)
             #lq = lq
             #print(lq.shape, gt.shape, model.opt['path']['models'])
             model.feed_train_data({'lq': lq, 'gt':gt})

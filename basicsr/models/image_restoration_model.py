@@ -68,6 +68,7 @@ class ImageCleanModel(BaseModel):
 
         # load pretrained models
         load_path = self.opt['path'].get('pretrain_network_g', None)
+        print('load path', load_path)
         if load_path is not None:
             self.load_network(self.net_g, load_path,
                               self.opt['path'].get('strict_load_g', True), param_key=self.opt['path'].get('param_key', 'params'))
@@ -141,7 +142,15 @@ class ImageCleanModel(BaseModel):
         if self.mixing_flag:
             self.gt, self.lq = self.mixing_augmentation(self.gt, self.lq)
 
-    def feed_data(self, data):
+    def feed_data(self, data, dataloader=None):
+        # dataloader.dataset.model_rgb2raw.to(self.device)
+        # gt = dataloader.dataset.rgb2raw(data['gt'].to(self.device))
+        # lq = torch.zeros_like(gt)
+        # for i in range(gt.shape[0]):
+        #     lq[i] = dataloader.dataset.add_noise(gt[i],
+        #                                            *dataloader.dataset.random_noise_levels())  # , use_cuda=False)
+        # data['lq']=  lq
+        # data['gt']=  gt
         self.lq = data['lq'].to(self.device)
         if 'gt' in data:
             self.gt = data['gt'].to(self.device)
@@ -150,6 +159,7 @@ class ImageCleanModel(BaseModel):
         self.optimizer_g.zero_grad()
         preds = self.net_g(self.lq)
         if not isinstance(preds, list):
+            #print('preds is not list', preds.shape)
             preds = [preds]
 
         self.output = preds[-1]
@@ -171,6 +181,7 @@ class ImageCleanModel(BaseModel):
 
         if self.ema_decay > 0:
             self.model_ema(decay=self.ema_decay)
+        self.preds = preds[-1].detach().cpu()
 
     def pad_test(self, window_size):        
         scale = self.opt.get('scale', 1)
@@ -233,7 +244,7 @@ class ImageCleanModel(BaseModel):
         for idx, val_data in enumerate(dataloader):
             img_name = osp.splitext(osp.basename(val_data['lq_path'][0]))[0]
 
-            self.feed_data(val_data)
+            self.feed_data(val_data, dataloader)
             test()
 
             visuals = self.get_current_visuals()

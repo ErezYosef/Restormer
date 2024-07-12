@@ -1,11 +1,12 @@
 import datetime
 import logging
 import time
-
+import wandb
 from .dist_util import get_dist_info, master_only
 
 initialized_logger = {}
-
+import torch
+from guided_diffusion.saving_imgs_utils import save_img,tensor2img
 
 class MessageLogger():
     """Message logger for printing.
@@ -31,7 +32,7 @@ class MessageLogger():
         self.logger = get_root_logger()
 
     @master_only
-    def __call__(self, log_vars):
+    def __call__(self, log_vars, images_dict=None):
         """Format logging message.
 
         Args:
@@ -75,6 +76,18 @@ class MessageLogger():
                 else:
                     self.tb_logger.add_scalar(k, v, current_iter)
         self.logger.info(message)
+        if images_dict is not None:
+            imdict = {}
+            for key, val in images_dict.items():
+                if isinstance(val, torch.Tensor):
+                    # print('torch images')
+                    val = tensor2img(val, min_max=(0,1))
+                # print(val.shape, val.dtype)
+                    val = wandb.Image(val)
+                    imdict[key] = val
+            #val = wandb.Image(val)
+            log_vars.update(imdict)
+        wandb.log(log_vars, step=current_iter)
 
 
 @master_only

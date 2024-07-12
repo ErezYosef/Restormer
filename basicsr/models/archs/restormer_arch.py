@@ -205,7 +205,7 @@ class Restormer(nn.Module):
     ):
 
         super(Restormer, self).__init__()
-
+        #inp_channels_override = 4
         self.patch_embed = OverlapPatchEmbed(inp_channels, dim)
 
         self.encoder_level1 = nn.Sequential(*[TransformerBlock(dim=dim, num_heads=heads[0], ffn_expansion_factor=ffn_expansion_factor, bias=bias, LayerNorm_type=LayerNorm_type) for i in range(num_blocks[0])])
