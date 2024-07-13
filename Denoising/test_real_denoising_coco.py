@@ -36,7 +36,7 @@ parser.add_argument('--save_images', action='store_true', help='Save denoised im
 args = parser.parse_args()
 
 ####### Load yaml #######
-yaml_file = 'Options/RealDenoising_Restormer.yml'
+yaml_file = 'Denoising/Options/RealDenoisingS21_Restormer.yml'
 import yaml
 
 try:
@@ -51,7 +51,8 @@ s = x['network_g'].pop('type')
 device=torch.device('cuda')
 
 # args.result_dir = os.path.join(args.result_dir, 'pretrained_results_real_s21')
-args.result_dir = os.path.join(args.result_dir, 'pretrained_results_real_s21_set7')
+#args.result_dir = os.path.join(args.result_dir, 'pretrained_results_real_s21_set7')
+args.result_dir = os.path.join(args.result_dir, 'finetune', args.weights.split('.')[0]+'_set1')
 os.makedirs(args.result_dir, exist_ok=True)
 
 args.save_images = True
@@ -74,7 +75,7 @@ from guided_diffusion.script_util import parse_yaml
 # args.main_data_path_val = '/data2/erez/datasets/coco_captions/raw_imgs/val'
 args.config_file = 'diffusion/coco_configs/concat_sample_config.yaml'
 # args.config_file = 'diffusion/coco_configs/s_concat_sample_config.yaml'
-args.config_file = 'diffusion/coco_configs/concat_real_sample_config.yaml'
+args.config_file = 'Denoising/diffusion/coco_configs/concat_real_sample_config.yaml'
 if os.path.exists(args.config_file):
     print('ex')
 
