@@ -651,7 +651,9 @@ def metrics_orig_env_and_raw_psnr():
     elif mode == 'cond_s21all_mix':
         process_folders = ['240418_1409_loracond_s21all13m_mixcap80']
     elif mode == 'cond_s21all_x20':
-        process_folders = ['240710_1513_x20_loracond_s21all']
+        process_folders = ['240710_1513_x20_loracond_s21all', '240712_1548_x20_basecond_s21all']
+    elif mode == 'cat_s21all_x20':
+        process_folders = ['240711_1435_x20_loracat_fix_s21all', '240711_1257_x20_loracat_s21all']
     else:
         process_folders = ['']
 
@@ -663,7 +665,7 @@ def metrics_orig_env_and_raw_psnr():
         if 'cond' in mode:
             folder = f'/data1/erez/Documents/sidd/diffusion_coco_storage/230803_1653_basecond_Nlvl_L14norm/{test_fname}/save_all4/'
         if 'cat' in mode:
-            folder = f'/data1/erez/Documents/sidd/diffusion_coco_storage/230803_1923_basecat_Nlvl_L14n/{test_fname}/save_all2/'
+            folder = f'/data1/erez/Documents/sidd/diffusion_coco_storage/230803_1923_basecat_Nlvl_L14n/{test_fname}/save_all4/'
         if 'n2v_01' in mode:
             folder = '/home/erez/PycharmProjects/raw_dn_related/n2v/models/n2v_coco_2210/save01b/'
             folder = '/home/erez/PycharmProjects/raw_dn_related/n2v/models/n2v_coco/save01/'
@@ -708,8 +710,12 @@ def metrics_orig_env_and_raw_psnr():
             yaml.dump(total_dict, outfile, indent=4)
 
 def collecting_more_sampling():
-    test_fname = '240710_1513_x20_loracond_s21all'
+    test_fname = '240711_1435_x20_loracat_fix_s21all'
+    test_fname = '240711_1257_x20_loracat_s21all'
+    test_fname = '240712_1548_x20_basecond_s21all'
+    test_fname = '240713_1349_x20_mix_loracond_s21all'
     path = f'/data1/erez/Documents/sidd/diffusion_coco_storage/230803_1653_basecond_Nlvl_L14norm/{test_fname}'
+    #path = f'/data1/erez/Documents/sidd/diffusion_coco_storage/230803_1923_basecat_Nlvl_L14n/{test_fname}'
     print(os.listdir(path))
     total_dict = {}
     total_count = {}
@@ -755,7 +761,7 @@ if __name__ == '__main__':
     #metrics_orig_env()
 
     # FOR n2v data: diffnoise env
-    #compute_raw_psnr()
+    compute_raw_psnr()
     # metrics_orig_env()
     # clip_score_orig_env('cat_30')
     # clip_score_orig_env('cat_s21all')
@@ -770,5 +776,5 @@ if __name__ == '__main__':
     # compute_raw_psnr()
 
 
-    #collecting_more_sampling()
+    collecting_more_sampling()
     metrics_orig_env_and_raw_psnr()
