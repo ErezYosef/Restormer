@@ -32,11 +32,13 @@ parser.add_argument('--input_dir', default='./Datasets/test/SIDD/', type=str, he
 parser.add_argument('--result_dir', default='/data1/erez/Documents/sidd/restormer_train/', type=str, help='Directory for results')
 parser.add_argument('--weights', default='./pretrained_models/real_denoising.pth', type=str, help='Path to weights')
 parser.add_argument('--save_images', action='store_true', help='Save denoised images in result directory')
-# CUDA_VISIBLE_DEVICES=2 python test_real_denoising_sidd.py --save_images --input_dir /data1/erez/datasets/sidd/srgb_test/
+
+# CUDA_VISIBLE_DEVICES=2 python test_real_denoising_s21.py --save_images --input_dir /data1/erez/datasets/sidd/srgb_test/
+# CUDA_VISIBLE_DEVICES=2 python test_real_denoising_s21.py --weights experiments/RealDenoisingS21_Restormer/models/net_g_500.pth
 args = parser.parse_args()
 
 ####### Load yaml #######
-yaml_file = 'Options/RealDenoising_Restormer.yml'
+yaml_file = 'Denoising/Options/RealDenoisingS21_Restormer.yml'
 import yaml
 
 try:
@@ -50,7 +52,7 @@ s = x['network_g'].pop('type')
 ##########################
 device=torch.device('cuda')
 
-args.result_dir = os.path.join(args.result_dir, 'pretrained_results_s21')
+args.result_dir = os.path.join(args.result_dir, 'finetune', args.weights.split('.')[0])
 os.makedirs(args.result_dir, exist_ok=True)
 
 args.save_images = True
@@ -72,7 +74,7 @@ from guided_diffusion.script_util import parse_yaml
 
 # args.main_data_path_val = '/data2/erez/datasets/coco_captions/raw_imgs/val'
 args.config_file = 'diffusion/coco_configs/concat_sample_config.yaml'
-args.config_file = 'diffusion/coco_configs/s_concat_sample_config.yaml'
+args.config_file = 'Denoising/diffusion/coco_configs/s_concat_sample_config.yaml'
 if os.path.exists(args.config_file):
     print('ex')
 

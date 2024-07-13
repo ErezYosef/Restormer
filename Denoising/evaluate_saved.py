@@ -454,6 +454,7 @@ if __name__ == '__main__':
     # diffnoise env:
     # rerun since deleted:
     # eval_restormer('pretrained_results_s21') # evaluate metrics for restormer
+    # eval_restormer('finetune/experiments/RealDenoisingS21_Restormer/models/net_g_100/') # evaluate metrics for restormer
     # eval_nafnet('pretrained_results03') # evaluate metrics for restormer
     #metrics_orig_env_RGB('cond_s21all_mix') # evaluate my method for psnr in rgb space
 
@@ -461,9 +462,10 @@ if __name__ == '__main__':
     # clip_score_restormer('pretrained_results01') # evaluate metrics for restormer
     # clip_score_restormer('pretrained_results03') # evaluate metrics for restormer
     # clip_score_restormer('pretrained_results_s21') # evaluate metrics for restormer
+    clip_score_restormer('finetune/experiments/RealDenoisingS21_Restormer/models/net_g_500/') # evaluate metrics for restormer
 
     #
-    clip_score_nafnet('pretrained_results01') # evaluate metrics for restormer _s21 01 03
-    clip_score_nafnet('pretrained_results03') # evaluate metrics for restormer _s21 01 03
-    clip_score_nafnet('pretrained_results_s21') # evaluate metrics for restormer _s21 01 03
+    # clip_score_nafnet('pretrained_results01') # evaluate metrics for restormer _s21 01 03
+    # clip_score_nafnet('pretrained_results03') # evaluate metrics for restormer _s21 01 03
+    # clip_score_nafnet('pretrained_results_s21') # evaluate metrics for restormer _s21 01 03
 
