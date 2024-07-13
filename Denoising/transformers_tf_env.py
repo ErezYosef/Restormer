@@ -486,6 +486,11 @@ def clip_score_orig_env(runfolder=None):
         process_folders = ['231009_1510_lora_cond_s21all_13m']
     elif mode == 'cond_s21all_mix':
         process_folders = ['240418_1409_loracond_s21all13m_mixcap80']
+    elif mode == 'cond_s21all_x20':
+        process_folders = ['240710_1513_x20_loracond_s21all', '240712_1548_x20_basecond_s21all']
+    elif mode == 'cat_s21all_x20':
+        process_folders = ['240711_1435_x20_loracat_fix_s21all', '240711_1257_x20_loracat_s21all']
+
     else:
         process_folders = ['']
 
@@ -495,9 +500,9 @@ def clip_score_orig_env(runfolder=None):
     for test_fname in process_folders:
         # cat: 230803_1923_basecat_Nlvl_L14n/ # cond: 230803_1653_basecond_Nlvl_L14norm
         if 'cond' in mode:
-            folder = f'/data1/erez/Documents/sidd/diffusion_coco_storage/230803_1653_basecond_Nlvl_L14norm/{test_fname}/save/' # todo update path to model before run
+            folder = f'/data1/erez/Documents/sidd/diffusion_coco_storage/230803_1653_basecond_Nlvl_L14norm/{test_fname}/save_all4/' # todo update path to model before run
         if 'cat' in mode:
-            folder = f'/data1/erez/Documents/sidd/diffusion_coco_storage/230803_1923_basecat_Nlvl_L14n/{test_fname}/save/' # todo update path to model before run
+            folder = f'/data1/erez/Documents/sidd/diffusion_coco_storage/230803_1923_basecat_Nlvl_L14n/{test_fname}/save_all4/' # todo update path to model before run
         if 'n2v_01' in mode:
             folder = '/home/erez/PycharmProjects/raw_dn_related/n2v/models/n2v_coco_2210/save01b/'
             folder = '/home/erez/PycharmProjects/raw_dn_related/n2v/models/n2v_coco/save01/'
@@ -761,11 +766,12 @@ if __name__ == '__main__':
     #metrics_orig_env()
 
     # FOR n2v data: diffnoise env
-    compute_raw_psnr()
+    #compute_raw_psnr()
     # metrics_orig_env()
     # clip_score_orig_env('cat_30')
     # clip_score_orig_env('cat_s21all')
     # clip_score_orig_env('cond_30')
+    clip_score_orig_env('cat_s21all_x20')
 
 
 
@@ -776,5 +782,5 @@ if __name__ == '__main__':
     # compute_raw_psnr()
 
 
-    collecting_more_sampling()
-    metrics_orig_env_and_raw_psnr()
+    #collecting_more_sampling()
+    #metrics_orig_env_and_raw_psnr()

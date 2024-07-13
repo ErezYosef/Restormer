@@ -21,6 +21,8 @@ def get_dataset(name):
         return dataset_s7_cam.Dataset_s7
     elif name == 's21':
         return dataset_s7_cam.Dataset_s21
+    elif name == 's21_set_caption':
+        return dataset_s7_cam.Dataset_s21_set_caption
     else:
         print(f'Warning: dataset class {name} is missing > return None..')
         return None

@@ -183,8 +183,8 @@ class Dataset_s21(data.Dataset):
         return img_index, embd_index
 
     def _load_embd(self, img_index, embd_index):
-        img_clip_embd = self.clip_cache.get(80-img_index, None)  # todo use 80-img_index for mixing caps and print:
-        print("mixing caps")
+        img_clip_embd = self.clip_cache.get(img_index, None)  # todo use 80-img_index for mixing caps and print:
+        # print("mixing caps")
         if img_clip_embd is None:
             return None
         return img_clip_embd[embd_index]
@@ -201,3 +201,59 @@ class Dataset_s21(data.Dataset):
         elif self.sample_every_img_for_val:
             return len(self.files)
         return len(self.files) * 5  # 5 embeds per img
+
+class Dataset_s21_set_caption(Dataset_s21):
+
+    # def __init__(self, main_path_dataset, clip_dataset=False, trim_len=0,
+    #              train_unlabeld=0, xf_width=512, mode='train',fpath_gt=None, fpath_noisy=None, **kwargs):
+    def __init__(self, *args, **kwargs):
+        # assert kwargs['mode'] == 'val'
+        super().__init__(*args, **kwargs)
+
+        if self.clip_dataset:
+            # import clip
+            from guided_diffusion.glide.clip_util import clip_model_wrap
+            clip_model = clip_model_wrap(model_name="ViT-L/14", device='cpu')
+            caps_clip_embd = clip_model.get_txt_embd(self.clip_dataset)
+            self.clip_cache = caps_clip_embd[0] # 512 vector
+            print(self.clip_dataset, self.clip_cache.shape, 'should be 768')
+
+
+
+
+
+    def __getitem__(self, index):
+        img_index, embd_index = self._get_imgtxt_index(index)
+
+        img_path = os.path.join(self.main_path, self.mode, self.fpath_gt, f'{img_index:06}_raw4c.pt')
+        raw_img = torch.load(img_path).float().float().squeeze()  # [..., ::2, ::2]
+        raw_img = raw_img * self.amplitude_factors[self.fpath_gt] * self.amplitude_factors['to_coco_mean']  # scale mean 0.0022 to the coco 0.196
+
+        img_path = os.path.join(self.main_path, self.mode, self.fpath_noisy, f'{img_index:06}_raw4c.pt')
+        lq = torch.load(img_path).float().float().squeeze()  # [..., ::2, ::2]
+        lq = lq * self.amplitude_factors[self.fpath_noisy] * self.amplitude_factors['to_coco_mean']  # scale mean 0.0024 to the coco 0.196
+
+        if self.noise_upscale_factor > 1:
+            raw_img, lq = self.noise_upscale(raw_img, lq)
+        raw_img = torch.clamp(raw_img, 0, 1)
+        lq = torch.clamp(lq, 0, 1)
+
+        #print(raw_img.shape)
+
+        gt = raw_img * 2 - 1  # change to diffusion [-1,1]
+
+        cond_dict = {'lq': lq}
+        if self.train_unlabeld>0:
+            print('Warning, self.train_unlabeld >0 with erezcam dataset')
+        if self.clip_dataset and torch.rand(1).item() > self.train_unlabeld:
+            #img_clip_embd = self.clip_cache.get(img_index, None)
+            img_clip_embd_data = self.clip_cache
+            if img_clip_embd_data is None:
+                print(f'Missing clip_embd for index {img_index}; got None')
+            # print('fix clip0', end=' ')
+            img_clip_embd_data /= torch.linalg.norm(img_clip_embd_data)
+            cond_dict['clip_condition'] = img_clip_embd_data
+        else:
+            cond_dict['clip_condition'] = torch.zeros(self.xf_width, dtype=torch.float32)
+
+        return gt, cond_dict

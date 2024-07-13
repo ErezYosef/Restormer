@@ -42,7 +42,7 @@ class Dataset_Realcam(data.Dataset):
             clip_model = clip_model_wrap(model_name="ViT-L/14", device='cpu')
             caps_clip_embd = clip_model.get_txt_embd(self.clip_dataset)
             self.clip_cache = caps_clip_embd[0] # 512 vector
-            print(self.clip_dataset, self.clip_cache.shape, 'should be 786')
+            print(self.clip_dataset, self.clip_cache.shape, 'should be 768')
             # fname_tag = 'val' if 'val' in main_path[-4:] else 'train'
             # clip_embd_data_path = f'/home/erez/PycharmProjects/raw_dn_related/CycleISP/pretrained_models/clip_embd_{fname_tag}.pt'
             # self.clip_cache = torch.load(clip_embd_data_path, map_location='cpu')
