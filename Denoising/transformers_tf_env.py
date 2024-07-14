@@ -488,6 +488,7 @@ def clip_score_orig_env(runfolder=None):
         process_folders = ['240418_1409_loracond_s21all13m_mixcap80']
     elif mode == 'cond_s21all_x20':
         process_folders = ['240710_1513_x20_loracond_s21all', '240712_1548_x20_basecond_s21all']
+        process_folders = ['240713_1349_x20_mix_loracond_s21all']
     elif mode == 'cat_s21all_x20':
         process_folders = ['240711_1435_x20_loracat_fix_s21all', '240711_1257_x20_loracat_s21all']
 
@@ -636,7 +637,7 @@ def metrics_orig_env_and_raw_psnr():
 
     test_fname = '230813_1200_concat_n03_1.2m'
 
-    mode = 'cond_s21all_x20'
+    mode = 'cond_sim_x20'
     if mode == 'cond':
         process_folders = ['230813_1135_cond_n02_1.2m', '230813_1142_cond_n03_1.2m', '230813_1308_lora_cond_s21_13m', '230813_1225_basecond_s21']
     elif mode == 'cond_30':
@@ -656,9 +657,12 @@ def metrics_orig_env_and_raw_psnr():
     elif mode == 'cond_s21all_mix':
         process_folders = ['240418_1409_loracond_s21all13m_mixcap80']
     elif mode == 'cond_s21all_x20':
-        process_folders = ['240710_1513_x20_loracond_s21all', '240712_1548_x20_basecond_s21all']
+        process_folders = ['240710_1513_x20_loracond_s21all', '240712_1548_x20_basecond_s21all', '240713_1349_x20_mix_loracond_s21all']
+        process_folders = ['240713_1349_x20_mix_loracond_s21all']
     elif mode == 'cat_s21all_x20':
         process_folders = ['240711_1435_x20_loracat_fix_s21all', '240711_1257_x20_loracat_s21all']
+    elif mode == 'cond_sim_x20':
+        process_folders = ['240713_2314_x20_cond30_n01_1.2m', '240713_2315_x20_cond30_n03_1.2m']
     else:
         process_folders = ['']
 
@@ -719,6 +723,8 @@ def collecting_more_sampling():
     test_fname = '240711_1257_x20_loracat_s21all'
     test_fname = '240712_1548_x20_basecond_s21all'
     test_fname = '240713_1349_x20_mix_loracond_s21all'
+    test_fname = '240713_2314_x20_cond30_n01_1.2m'
+    test_fname = '240713_2315_x20_cond30_n03_1.2m'
     path = f'/data1/erez/Documents/sidd/diffusion_coco_storage/230803_1653_basecond_Nlvl_L14norm/{test_fname}'
     #path = f'/data1/erez/Documents/sidd/diffusion_coco_storage/230803_1923_basecat_Nlvl_L14n/{test_fname}'
     print(os.listdir(path))
@@ -771,7 +777,7 @@ if __name__ == '__main__':
     # clip_score_orig_env('cat_30')
     # clip_score_orig_env('cat_s21all')
     # clip_score_orig_env('cond_30')
-    clip_score_orig_env('cat_s21all_x20')
+    # clip_score_orig_env('cond_s21all_x20')
 
 
 
@@ -782,5 +788,5 @@ if __name__ == '__main__':
     # compute_raw_psnr()
 
 
-    #collecting_more_sampling()
-    #metrics_orig_env_and_raw_psnr()
+    collecting_more_sampling()
+    metrics_orig_env_and_raw_psnr()

@@ -60,8 +60,10 @@ dataset_type: s21_set_caption
 fpath_gt: iso50_t1-50
 fpath_noisy: iso3200_t1-12000
 
-trim_len: 0
-clip_dataset: 'A dog running in a park' # for contidition on clip data
+trim_len: 8
+#clip_dataset: 'A soft and fluffy doll fur' # for contidition on clip data
+#clip_dataset: 'A smooth, hard plastic doll' # for contidition on clip data
+clip_dataset: 'A person on the street'
 save_all_samples: True # set to save samples in folder on inference
 deterministic_seed_noise: 0 # set seed to the dataset loading
 
