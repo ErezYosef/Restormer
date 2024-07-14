@@ -109,7 +109,9 @@ class evaluator_general():
 
 def eval_nafnet(folder):
     #folder = os.path.join('/data1/erez/Documents/sidd/restormer_train/', folder)
-    folder = os.path.join('/data1/erez/Documents/sidd/NAFnet_sample/', folder)
+    #folder = os.path.join('/data1/erez/Documents/sidd/NAFnet_sample/', folder)
+    NAFNet_folder_name = 'NAFnet_FT100_ma10_sample'
+    folder = os.path.join(f'/data1/erez/Documents/sidd/{NAFNet_folder_name}/', folder)
     files = os.listdir(folder)
     res_dict = {}
 
@@ -117,15 +119,17 @@ def eval_nafnet(folder):
     res_dict = {}
     print('ffolderL:', folder)
 
-    gt_img = glob.glob(os.path.join(folder.replace('NAFnet_sample', 'restormer_train'), 'gt*.pt'))
+    gt_img = glob.glob(os.path.join(folder.replace(NAFNet_folder_name, 'restormer_train'), 'gt*.pt'))
     print('ffolderL:', folder)
     pred_img = glob.glob(os.path.join(folder, 'sample*[0-9].pt'))
     low_res_img = glob.glob(os.path.join(folder, 'sample*_low_res.pt'))
     [g.sort() for g in [gt_img, pred_img, low_res_img]]
     lpips_f = evaluator_lpips()
     metrics_dict = {}
-    assert len(gt_img) == len(low_res_img)
-    assert len(gt_img) == len(pred_img)
+    assert len(gt_img) == len(
+        low_res_img), f"Lengths do not match: len(gt_img) = {len(gt_img)}, len(low_res_img) = {len(low_res_img)}"
+    assert len(gt_img) == len(
+        pred_img), f"Lengths do not match: len(gt_img) = {len(gt_img)}, len(pred_img) = {len(pred_img)}"
     print('ffolderL:', folder, pred_img[0])
     for i, gt_im_path in enumerate(gt_img):
         gt = torch.load(gt_im_path)
@@ -349,7 +353,8 @@ from guided_diffusion.glide import clip_util
 
 def clip_score_nafnet(folder):
     #folder = os.path.join('/data1/erez/Documents/sidd/restormer_train/', folder)
-    folder = os.path.join('/data1/erez/Documents/sidd/NAFnet_sample/', folder)
+    NAFNet_folder_name = 'NAFnet_FT100_ma10_sample'
+    folder = os.path.join(f'/data1/erez/Documents/sidd/{NAFNet_folder_name}/', folder)
     files = os.listdir(folder)
     res_dict = {}
 
@@ -357,7 +362,7 @@ def clip_score_nafnet(folder):
     res_dict = {}
     print('ffolderL:', folder)
 
-    gt_img = glob.glob(os.path.join(folder.replace('NAFnet_sample', 'restormer_train'), 'gt*.png'))
+    gt_img = glob.glob(os.path.join(folder.replace(NAFNet_folder_name, 'restormer_train'), 'gt*.png'))
     print('ffolderL:', folder)
     pred_img = glob.glob(os.path.join(folder, 'sample*[0-9].png'))
     low_res_img = glob.glob(os.path.join(folder, 'sample*_low_res.png'))
@@ -456,16 +461,17 @@ if __name__ == '__main__':
     # eval_restormer('pretrained_results_s21') # evaluate metrics for restormer
     # eval_restormer('finetune/experiments/RealDenoisingS21_Restormer/models/net_g_100/') # evaluate metrics for restormer
     # eval_nafnet('pretrained_results03') # evaluate metrics for restormer
+    #eval_nafnet('pretrained_results_s21') # evaluate metrics for restormer
     #metrics_orig_env_RGB('cond_s21all_mix') # evaluate my method for psnr in rgb space
 
     # rerun to get better save of clipscore_dict.yaml
     # clip_score_restormer('pretrained_results01') # evaluate metrics for restormer
     # clip_score_restormer('pretrained_results03') # evaluate metrics for restormer
     # clip_score_restormer('pretrained_results_s21') # evaluate metrics for restormer
-    clip_score_restormer('finetune/experiments/RealDenoisingS21_Restormer/models/net_g_500/') # evaluate metrics for restormer
+    #clip_score_restormer('finetune/experiments/RealDenoisingS21_Restormer/models/net_g_500/') # evaluate metrics for restormer
 
     #
     # clip_score_nafnet('pretrained_results01') # evaluate metrics for restormer _s21 01 03
     # clip_score_nafnet('pretrained_results03') # evaluate metrics for restormer _s21 01 03
-    # clip_score_nafnet('pretrained_results_s21') # evaluate metrics for restormer _s21 01 03
+    clip_score_nafnet('pretrained_results_s21') # evaluate metrics for restormer _s21 01 03
 
