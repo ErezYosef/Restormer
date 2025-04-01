@@ -1,5 +1,5 @@
 
-from . import dataset_sidd, dataset_cococap, dataset_real, dataset_s7_cam
+from . import dataset_sidd, dataset_cococap, dataset_real, dataset_s7_cam, dataset_allied_cam
 
 
 
@@ -23,6 +23,8 @@ def get_dataset(name):
         return dataset_s7_cam.Dataset_s21
     elif name == 's21_set_caption':
         return dataset_s7_cam.Dataset_s21_set_caption
+    elif name == 'allied_cam':
+        return dataset_allied_cam.Dataset_allied_cam
     else:
         print(f'Warning: dataset class {name} is missing > return None..')
         return None

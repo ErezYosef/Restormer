@@ -71,6 +71,27 @@ def main():
     val_loader = torch.utils.data.DataLoader(val_ds, batch_size=8, shuffle=False, num_workers=args.num_workers)
 
     logger.log("training...")
+
+    # def forward_hook(module, input, output):
+    #     if torch.isnan(output).any():
+    #         print(f"NaN detected in {module} during forward pass.")
+    #
+    # def backward_hook(module, grad_input, grad_output):
+    #     if torch.isnan(grad_output[0]).any():
+    #         print(f"NaN detected in {module} during backward pass.")
+    #
+    # for layer in model.modules():
+    #     layer.register_forward_hook(forward_hook)
+    #     layer.register_full_backward_hook(backward_hook)
+
+    def check_params(model):
+        for name, param in model.named_parameters():
+            if torch.isnan(param).any():
+                print(f"NaN in parameter {name}")
+            if param.grad is not None and torch.isnan(param.grad).any():
+                print(f"NaN in gradient of {name}")
+    check_params(model)
+
     TrainLoop(
         model=model,
         diffusion=diffusion,

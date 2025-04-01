@@ -132,6 +132,8 @@ def musiq_eval_folders():
         names = ['gt{:03}.png', 'sample{:03}_low_res.png', 'sample{:03}.png']
         res_dict = {}
         num_samples = len(glob.glob(os.path.join(folder, 'gt*.png')))
+        if num_samples == 0:
+            raise ValueError(f'No images found in {folder}')
         print(f'WARNING evaluating {num_samples} images')
         for i in range(num_samples):
             for im_name in names:
@@ -265,9 +267,14 @@ def metrics_orig_env():
 
     test_fname = '230813_1200_concat_n03_1.2m'
 
-    mode = 'cond_s21all_mix'
+    mode = 'cat_allied'
     if mode == 'cond':
         process_folders = ['230813_1135_cond_n02_1.2m', '230813_1142_cond_n03_1.2m', '230813_1308_lora_cond_s21_13m', '230813_1225_basecond_s21']
+    elif mode == 'cond_allied':
+        process_folders = ['250108_1308_x20_loracond_allied_all']
+    elif mode == 'cat_allied':
+        process_folders = ['250109_1221_x20_loracat_allied']
+        process_folders = ['250112_1319_x20_loracat_allied_135']
     elif mode == 'cond_30':
         process_folders = ['231026_1425_cond30_n03_1.2m', '231026_1504_cond30_n02_1.2m']
         process_folders = ['231106_1411_cond30_n04_1.2m', '231106_1410_cond30_n01_1.2m']
@@ -426,6 +433,8 @@ def clip_score_orig_env(runfolder=None):
 
     with open(f'pretrained_models/cococap/clip_caps_val_end_at_30.yaml', 'r') as s:
         captions_data = yaml.load(s, yaml.SafeLoader)
+    with open('/home/erez/PycharmProjects/raw_dn_related/CycleISP/dataloaders/clip_caps_val_end_at_None.yaml', 'r') as s:
+        captions_data = yaml.load(s, yaml.SafeLoader)
 
     #image, image_bytes = load_image_from_url(image_url)
     def metric_get_dict(folder, metric_func: partial):
@@ -438,6 +447,7 @@ def clip_score_orig_env(runfolder=None):
         gt_name = 'gt{:03}.png'
         res_dict = {}
         num_samples = len(glob.glob(os.path.join(folder, 'gt*.png')))
+        assert num_samples > 0, f'no samples in {folder}'
         print(f'WARNING evaluating {num_samples} images')
         for i in range(num_samples):
             img_clip_embd = clip_cache.get(i, None)[0]
@@ -470,6 +480,17 @@ def clip_score_orig_env(runfolder=None):
     mode = runfolder or 'cond_s21all_mix'
     if mode == 'cond':
         process_folders = ['230813_1135_cond_n02_1.2m', '230813_1142_cond_n03_1.2m', '230813_1308_lora_cond_s21_13m', '230813_1225_basecond_s21']
+    elif mode == 'cond_allied':
+        process_folders = ['250108_1308_x20_loracond_allied_all']
+        process_folders = ['250119_1450_x20_loracond_ga4_allied_all']
+        process_folders = ['250122_1143_x10_loracond_allied_re130gac4']
+        process_folders = ['250126_1244_x10_loracond_allied_res130_140']
+        process_folders = ['250127_1508_x10_loracond_allied_res130_144']
+
+    elif mode == 'cat_allied':
+        process_folders = ['250109_1221_x20_loracat_allied']
+        process_folders = ['250122_1126_x10_loracat_allied_reslora125_131']
+
     elif mode == 'cond_30':
         # process_folders = ['231026_1425_cond30_n03_1.2m', '231026_1504_cond30_n02_1.2m']
         process_folders = ['231106_1411_cond30_n04_1.2m', '231106_1410_cond30_n01_1.2m']
@@ -503,7 +524,7 @@ def clip_score_orig_env(runfolder=None):
         if 'cond' in mode:
             folder = f'/data1/erez/Documents/sidd/diffusion_coco_storage/230803_1653_basecond_Nlvl_L14norm/{test_fname}/save_all4/' # todo update path to model before run
         if 'cat' in mode:
-            folder = f'/data1/erez/Documents/sidd/diffusion_coco_storage/230803_1923_basecat_Nlvl_L14n/{test_fname}/save_all4/' # todo update path to model before run
+            folder = f'/data1/erez/Documents/sidd/diffusion_coco_storage/230803_1923_basecat_Nlvl_L14n/{test_fname}/save/' # todo update path to model before run
         if 'n2v_01' in mode:
             folder = '/home/erez/PycharmProjects/raw_dn_related/n2v/models/n2v_coco_2210/save01b/'
             folder = '/home/erez/PycharmProjects/raw_dn_related/n2v/models/n2v_coco/save01/'
@@ -547,7 +568,7 @@ def clip_score_orig_env(runfolder=None):
         with open(os.path.join(folder, f'clip_score336px_{test_fname}.yaml'), 'w') as outfile:
             yaml.dump(total_dict, outfile, indent=4)
 
-def metrics_orig_env_and_raw_psnr():
+def metrics_orig_env_and_raw_psnr(mode=None):
     import lpips
     from guided_diffusion.glide.ssim import ssim
     from functools import partial
@@ -637,9 +658,18 @@ def metrics_orig_env_and_raw_psnr():
 
     test_fname = '230813_1200_concat_n03_1.2m'
 
-    mode = 'cat_sim_x20'
+    mode = mode or 'cat_allied'
     if mode == 'cond':
         process_folders = ['230813_1135_cond_n02_1.2m', '230813_1142_cond_n03_1.2m', '230813_1308_lora_cond_s21_13m', '230813_1225_basecond_s21']
+    elif mode == 'cond_allied':
+        process_folders = ['250108_1308_x20_loracond_allied_all']
+        process_folders = ['250119_1450_x20_loracond_ga4_allied_all']
+        process_folders = ['250122_1143_x10_loracond_allied_re130gac4']
+        process_folders = ['250126_1244_x10_loracond_allied_res130_140']
+        process_folders = ['250127_1508_x10_loracond_allied_res130_144']
+    elif mode == 'cat_allied':
+        process_folders = ['250109_1221_x20_loracat_allied']
+        process_folders = ['250122_1126_x10_loracat_allied_reslora125_131']
     elif mode == 'cond_30':
         process_folders = ['231026_1425_cond30_n03_1.2m', '231026_1504_cond30_n02_1.2m']
         process_folders = ['231106_1411_cond30_n04_1.2m', '231106_1410_cond30_n01_1.2m']
@@ -729,8 +759,15 @@ def collecting_more_sampling():
     test_fname = '240713_2315_x20_cond30_n03_1.2m'
     test_fname = '240714_1136_x20_cat30_n01_12m'
     test_fname = '240714_1136_x20_cat30_n03_12m'
-    path = f'/data1/erez/Documents/sidd/diffusion_coco_storage/230803_1653_basecond_Nlvl_L14norm/{test_fname}'
+    test_fname = '250109_1221_x20_loracat_allied'
+    test_fname = '250122_1143_x10_loracond_allied_re130gac4'
+    # test_fname = '250122_1126_x10_loracat_allied_reslora125_131'
+    test_fname = '250126_1244_x10_loracond_allied_res130_140'
+    test_fname = '250127_1508_x10_loracond_allied_res130_144'
+
+    #test_fname = '250108_1308_x20_loracond_allied_all'
     path = f'/data1/erez/Documents/sidd/diffusion_coco_storage/230803_1923_basecat_Nlvl_L14n/{test_fname}'
+    path = f'/data1/erez/Documents/sidd/diffusion_coco_storage/230803_1653_basecond_Nlvl_L14norm/{test_fname}'
 
     print(os.listdir(path))
     total_dict = {}
@@ -742,7 +779,8 @@ def collecting_more_sampling():
     if not os.path.exists(out_folder):
         os.mkdir(out_folder)
 
-    for i in range(20):
+    num_folders_to_mean = 10
+    for i in range(10):
         save_folder = os.path.join(path, f'save{i}')
         files = glob.glob(f'{save_folder}/sample*[0-9].pt')
         files = glob.glob(f'{save_folder}/*.pt')
@@ -757,10 +795,10 @@ def collecting_more_sampling():
         #print(total_count)
 
     print('number of images', len(total_dict.keys()))
-    print(total_count)
+    # print(total_count)
 
     for imname, v in total_dict.items():
-        if total_count[imname] != 20:
+        if total_count[imname] != num_folders_to_mean:
             print(f'num of image {imname} is {total_count[imname]}')
         total_dict[imname] = v / total_count[imname]
         out_file = os.path.join(out_folder, imname)
@@ -794,4 +832,20 @@ if __name__ == '__main__':
 
 
     #collecting_more_sampling()
-    metrics_orig_env_and_raw_psnr()
+    # metrics_orig_env_and_raw_psnr()
+
+    # metrics_orig_env()
+
+    # collecting_more_sampling()
+    # clip_score_orig_env('cat_allied')
+    # metrics_orig_env_and_raw_psnr('cat_allied') # for save_all4 avg of 20 samples including raw+rgb psnr.
+    # metrics_orig_env_and_raw_psnr('cond_allied') # for save_all4 avg of 20 samples including raw+rgb psnr.
+
+    # metrics_orig_env()
+
+    # clip_score_orig_env('cat_allied')
+    # collecting_more_sampling()
+    clip_score_orig_env('cond_allied')
+    metrics_orig_env_and_raw_psnr('cond_allied')  # for save_all4 avg of 20 samples including raw+rgb psnr.
+    # metrics_orig_env_and_raw_psnr('cat_allied')  # for save_all4 avg of 20 samples including raw+rgb psnr.
+

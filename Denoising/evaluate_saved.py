@@ -107,9 +107,9 @@ class evaluator_general():
         return metrics_dict
 
 
-def eval_nafnet(folder):
+def eval_nafnet(folder, NAFnet_model_folder_name='NAFnet_sample'):
     #folder = os.path.join('/data1/erez/Documents/sidd/restormer_train/', folder)
-    folder = os.path.join('/data1/erez/Documents/sidd/NAFnet_sample/', folder)
+    folder = os.path.join(f'/data1/erez/Documents/sidd', NAFnet_model_folder_name, folder)
     files = os.listdir(folder)
     res_dict = {}
 
@@ -117,15 +117,15 @@ def eval_nafnet(folder):
     res_dict = {}
     print('ffolderL:', folder)
 
-    gt_img = glob.glob(os.path.join(folder.replace('NAFnet_sample', 'restormer_train'), 'gt*.pt'))
+    gt_img = glob.glob(os.path.join(folder.replace(NAFnet_model_folder_name, 'restormer_train'), 'gt*.pt'))
     print('ffolderL:', folder)
     pred_img = glob.glob(os.path.join(folder, 'sample*[0-9].pt'))
     low_res_img = glob.glob(os.path.join(folder, 'sample*_low_res.pt'))
     [g.sort() for g in [gt_img, pred_img, low_res_img]]
     lpips_f = evaluator_lpips()
     metrics_dict = {}
-    assert len(gt_img) == len(low_res_img)
-    assert len(gt_img) == len(pred_img)
+    assert len(gt_img) == len(low_res_img), f'{len(gt_img)} != {len(low_res_img)}'
+    assert len(gt_img) == len(pred_img), f'{len(gt_img)} != {len(pred_img)}'
     print('ffolderL:', folder, pred_img[0])
     for i, gt_im_path in enumerate(gt_img):
         gt = torch.load(gt_im_path)
@@ -143,6 +143,46 @@ def eval_nafnet(folder):
     for k,v in metrics_dict.items():
         if '_' not in k:
             print(k,v)
+
+def eval_TECDNet(folder_path):
+    #folder = os.path.join('/data1/erez/Documents/sidd/restormer_train/', folder)
+    folder_data_type = 'pretrained_results_allied1' if 'allied' in folder_path.lower() else 'pretrained_results_s21'
+    gt_folder = os.path.join(f'/data1/erez/Documents/sidd', 'restormer_train', folder_data_type)
+    folder = folder_path # os.path.join('/home/erez/PycharmProjects/raw_dn_related/TECDNet/results/coco_s21/s21_origw/', folder)
+    files = os.listdir(folder)
+    res_dict = {}
+
+    names = ['gt{:03}.png', 'sample{:03}_low_res.png', 'sample{:03}.png']
+    res_dict = {}
+    print('ffolderL:', folder)
+
+    gt_img = glob.glob(os.path.join(gt_folder, 'gt*.pt'))
+    print('ffolderL:', folder)
+    pred_img = glob.glob(os.path.join(folder, 'sample*[0-9].pt'))
+    low_res_img = glob.glob(os.path.join(folder, 'sample*_low_res.pt'))
+    [g.sort() for g in [gt_img, pred_img, low_res_img]]
+    lpips_f = evaluator_lpips()
+    metrics_dict = {}
+    assert len(gt_img) == len(low_res_img), f'{len(gt_img)} != {len(low_res_img)}'
+    assert len(gt_img) == len(pred_img), f'{len(gt_img)} != {len(pred_img)}'
+    print('ffolderL:', folder, pred_img[0])
+    for i, gt_im_path in enumerate(gt_img):
+        gt = torch.load(gt_im_path)
+        res = torch.load(pred_img[i]) # gt+torch.randn_like(gt)*0.00000000001
+        metrics_dict = evaluator_mse_ssim(res, gt, metrics_dict, i)
+        metrics_dict = lpips_f(res, gt, metrics_dict, i)
+
+    metrics_dict['psnr'] = -10 * torch.log10(metrics_dict['mse'])
+
+    with open(os.path.join(folder, f'metric_dict.yaml'), 'w') as outfile:
+        yaml.dump(dict_representor_yaml(metrics_dict), outfile, indent=4)
+
+    #show_image(image)
+    print('DONE!')
+    for k,v in metrics_dict.items():
+        if '_' not in k:
+            print(k,v)
+
 
 def eval_restormer(folder):
     folder = os.path.join('/data1/erez/Documents/sidd/restormer_train/', folder)
@@ -231,6 +271,9 @@ def metrics_orig_env_RGB(mode=None):
     mode = mode or 'cat_30'
     if mode == 'cond':
         process_folders = ['230813_1135_cond_n02_1.2m', '230813_1142_cond_n03_1.2m', '230813_1308_lora_cond_s21_13m', '230813_1225_basecond_s21']
+    elif mode == 'cond_allied':
+        process_folders = ['250108_1308_x20_loracond_allied_all']
+        process_folders = ['250119_1450_x20_loracond_ga4_allied_all']
     elif mode == 'cond_30':
         process_folders = ['231026_1425_cond30_n03_1.2m', '231026_1504_cond30_n02_1.2m']
         process_folders = ['231106_1411_cond30_n04_1.2m', '231106_1410_cond30_n01_1.2m']
@@ -347,17 +390,23 @@ def dict_representor_yaml(dict_in):
 
 from guided_diffusion.glide import clip_util
 
-def clip_score_nafnet(folder):
+def clip_score_nafnet(folder, NAFnet_model_folder_name='NAFnet_sample', override_for_TECD=None):
     #folder = os.path.join('/data1/erez/Documents/sidd/restormer_train/', folder)
-    folder = os.path.join('/data1/erez/Documents/sidd/NAFnet_sample/', folder)
+    folder = os.path.join('/data1/erez/Documents/sidd', NAFnet_model_folder_name, folder)
     files = os.listdir(folder)
     res_dict = {}
 
     names = ['gt{:03}.png', 'sample{:03}_low_res.png', 'sample{:03}.png']
     res_dict = {}
-    print('ffolderL:', folder)
+    # print('ffolderL:', folder)
 
-    gt_img = glob.glob(os.path.join(folder.replace('NAFnet_sample', 'restormer_train'), 'gt*.png'))
+    gt_img = glob.glob(os.path.join(folder.replace(NAFnet_model_folder_name, 'restormer_train'), 'gt*.png'))
+    if override_for_TECD:
+        folder = override_for_TECD.get('folder', folder)
+        gt_path = override_for_TECD.get('gt_path', None)
+        if gt_path:
+            gt_img = glob.glob(os.path.join(gt_path, 'gt*.png'))
+
     print('ffolderL:', folder)
     pred_img = glob.glob(os.path.join(folder, 'sample*[0-9].png'))
     low_res_img = glob.glob(os.path.join(folder, 'sample*_low_res.png'))
@@ -373,7 +422,9 @@ def clip_score_nafnet(folder):
     mode='val'
     clip_embd_data_path = f'pretrained_models/cococap/clip_embd_L14_{mode}.pt'
     clip_cache = torch.load(clip_embd_data_path, map_location='cpu')
-    with open(f'pretrained_models/cococap/clip_caps_val_end_at_30.yaml', 'r') as s:
+    # with open(f'pretrained_models/cococap/clip_caps_val_end_at_30.yaml', 'r') as s:
+    #     captions_data = yaml.load(s, yaml.SafeLoader)
+    with open(f'/home/erez/PycharmProjects/raw_dn_related/CycleISP/dataloaders/clip_caps_val_end_at_None.yaml', 'r') as s:
         captions_data = yaml.load(s, yaml.SafeLoader)
 
     clipscore = evaluator_general('clipscore', clip_model.get_cosine, device=device)
@@ -422,7 +473,7 @@ def clip_score_restormer(folder):
     mode='val'
     clip_embd_data_path = f'pretrained_models/cococap/clip_embd_L14_{mode}.pt'
     clip_cache = torch.load(clip_embd_data_path, map_location='cpu')
-    with open(f'pretrained_models/cococap/clip_caps_val_end_at_30.yaml', 'r') as s:
+    with open('/home/erez/PycharmProjects/raw_dn_related/CycleISP/dataloaders/clip_caps_val_end_at_None.yaml', 'r') as s:
         captions_data = yaml.load(s, yaml.SafeLoader)
 
 
@@ -463,7 +514,52 @@ if __name__ == '__main__':
     # clip_score_restormer('pretrained_results_s21') # evaluate metrics for restormer
 
     #
-    clip_score_nafnet('pretrained_results01') # evaluate metrics for restormer _s21 01 03
-    clip_score_nafnet('pretrained_results03') # evaluate metrics for restormer _s21 01 03
-    clip_score_nafnet('pretrained_results_s21') # evaluate metrics for restormer _s21 01 03
+    # clip_score_nafnet('pretrained_results01') # evaluate metrics for restormer _s21 01 03
+    # clip_score_nafnet('pretrained_results03') # evaluate metrics for restormer _s21 01 03
+    # clip_score_nafnet('pretrained_results_s21') # evaluate metrics for restormer _s21 01 03
+
+
+    # eval_restormer('pretrained_results_allied1') # evaluate metrics for restormer
+    # eval_nafnet('pretrained_results_allied1') # evaluate metrics for _
+
+    # eval_nafnet('pretrained_results_allied1', NAFnet_model_folder_name='NAFnet_alliedFT100_sample') # evaluate metrics for restormer
+    # eval_nafnet('pretrained_results_allied1', NAFnet_model_folder_name='NAFnet_alliedFT200_sample') # evaluate metrics for restormer
+    # eval_nafnet('pretrained_results_allied1', NAFnet_model_folder_name='NAFnet_alliedFT500_sample') # evaluate metrics for restormer
+    # eval_nafnet('pretrained_results_allied1', NAFnet_model_folder_name='NAFnet_alliedFT1000_sample') # evaluate metrics for restormer
+    #clip_score_nafnet('pretrained_results_allied1') # evaluate metrics for restormer _s21 01 03
+    # clip_score_nafnet('pretrained_results_allied1', NAFnet_model_folder_name='NAFnet_alliedFT100_sample') # evaluate metrics for restormer _s21 01 03
+    # clip_score_nafnet('pretrained_results_allied1', NAFnet_model_folder_name='NAFnet_alliedFT200_sample') # evaluate metrics for restormer _s21 01 03
+    # clip_score_nafnet('pretrained_results_allied1', NAFnet_model_folder_name='NAFnet_alliedFT500_sample') # evaluate metrics for restormer _s21 01 03
+    # clip_score_nafnet('pretrained_results_allied1', NAFnet_model_folder_name='NAFnet_alliedFT1000_sample') # evaluate metrics for restormer _s21 01 03
+
+    # metrics_orig_env_RGB('cond_allied') # evaluate my method for psnr in rgb space
+
+    #eval_restormer('finetune/basicsr/experiments/RealDenoisingAlliedlr1e4_Restormer/models/net_g_500')  # /data1/erez/Documents/sidd/restormer_train/finetune/basicsr/experiments/RealDenoisingAlliedlr1e4_Restormer/models/net_g_500
+    # eval_restormer('finetune/basicsr/experiments/RealDenoisingAlliedlr1e4_Restormer/models/net_g_200')
+    # eval_restormer('finetune/basicsr/experiments/RealDenoisingAlliedlr1e4_Restormer/models/net_g_100')
+    # clip_score_restormer('finetune/basicsr/experiments/RealDenoisingAlliedlr1e4_Restormer/models/net_g_100') # evaluate metrics for restormer
+    # clip_score_restormer('finetune/basicsr/experiments/RealDenoisingAlliedlr1e4_Restormer/models/net_g_200') # evaluate metrics for restormer
+    # clip_score_restormer('finetune/basicsr/experiments/RealDenoisingAlliedlr1e4_Restormer/models/net_g_500') # evaluate metrics for restormer
+    # clip_score_restormer('pretrained_results_allied1') # evaluate metrics for restormer
+
+    # eval_TECDNet('/home/erez/PycharmProjects/raw_dn_related/TECDNet/results/coco_s21/s21_origw/') # evaluate metrics for restormer
+    # eval_TECDNet('/home/erez/PycharmProjects/raw_dn_related/TECDNet/results/coco_s21/s21_train200/') # evaluate metrics for restormer
+    # eval_TECDNet('/home/erez/PycharmProjects/raw_dn_related/TECDNet/results/coco_allied/t175_origw/') # evaluate metrics for restormer
+    # eval_TECDNet('/home/erez/PycharmProjects/raw_dn_related/TECDNet/results/coco_allied/t175_train200') # evaluate metrics for restormer
+
+    gt_folder_allied = os.path.join(f'/data1/erez/Documents/sidd', 'restormer_train', 'pretrained_results_allied1')
+    # override_for_TECD = {'folder': '/home/erez/PycharmProjects/raw_dn_related/TECDNet/results/coco_allied/t175_train200', 'gt_path': gt_folder_allied}
+    # clip_score_nafnet('pretrained_results_allied1', NAFnet_model_folder_name='NAFnet_alliedFT200_sample', override_for_TECD=override_for_TECD)
+    # override_for_TECD = {'folder': '/home/erez/PycharmProjects/raw_dn_related/TECDNet/results/coco_allied/t175_origw/', 'gt_path': gt_folder_allied}
+    # clip_score_nafnet('pretrained_results_allied1', NAFnet_model_folder_name='NAFnet_alliedFT200_sample', override_for_TECD=override_for_TECD)
+
+    gt_folder_s21 = os.path.join(f'/data1/erez/Documents/sidd', 'restormer_train', 'pretrained_results_s21')
+    # override_for_TECD = {'folder': '/home/erez/PycharmProjects/raw_dn_related/TECDNet/results/coco_s21/s21_train200/', 'gt_path': gt_folder_s21}
+    # clip_score_nafnet('pretrained_results_allied1', NAFnet_model_folder_name='NAFnet_alliedFT200_sample', override_for_TECD=override_for_TECD)
+    # override_for_TECD = {'folder': '/home/erez/PycharmProjects/raw_dn_related/TECDNet/results/coco_s21/s21_origw/', 'gt_path': gt_folder_s21}
+    # clip_score_nafnet('pretrained_results_allied1', NAFnet_model_folder_name='NAFnet_alliedFT200_sample', override_for_TECD=override_for_TECD)
+
+
+    metrics_orig_env_RGB('cond_allied') # evaluate my method for psnr in rgb space
+
 

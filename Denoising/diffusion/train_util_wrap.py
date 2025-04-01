@@ -129,7 +129,11 @@ class TrainLoop_wrap(TrainLoop):
                 if self.step == 0:  # was "==0" but changed to support resume train from 999999
                     logger.get_logger().logimage(f'img{call_id}_input0', gt_imgs.to('cpu'))
                 for k,v in x_T_end.items():
-                    logger.get_logger().logimage(f"img{call_id}_{k}", v)
+                    if k == 'low_res':
+                        if self.step == 0:
+                            logger.get_logger().logimage(f'img{call_id}_{k}', v)
+                    else:
+                        logger.get_logger().logimage(f"img{call_id}_{k}", v)
                 #print(f'logging to img{call_id}_xT at {self.step}, total {len(x_T_end)}')
                 logger.get_logger().logimage(f'img{call_id}_samples0', sample_cp)
                 if update_logger_for_sample:  # in code: image_sample.py
